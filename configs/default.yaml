@@ -1,0 +1,131 @@
+experiment:
+  name: speechcgt
+  source_corpus: Pitt
+  external_corpus: WLS
+  seed: 42
+  device: cuda
+  output_dir: outputs/speechcgt
+
+data:
+  manifest_dir: speechcgt/data/manifests
+  raw_data_dir: speechcgt/data/raw
+  processed_data_dir: speechcgt/data/processed
+  sample_id_key: sample_id
+  participant_id_key: participant_id
+  label_key: label
+  audio_path_key: audio_path
+  transcript_key: transcript
+  corpus_name_key: corpus_name
+  adapters:
+    pitt:
+      raw_root: null
+      metadata_path: null
+      audio_glob: "**/*.wav"
+      transcript_glob: "**/*.cha"
+    delaware:
+      raw_root: null
+      metadata_path: null
+      audio_glob: "**/*.wav"
+      transcript_glob: "**/*.cha"
+    wls:
+      raw_root: null
+      metadata_path: null
+      audio_glob: "**/*.wav"
+      transcript_glob: "**/*.cha"
+      label_2020_column: diagnosis_2020
+      prior_impairment_2011_column: impairment_2011
+
+audio:
+  target_sample_rate: 16000
+  mono: true
+  dtype: float32
+  target_lufs: -23.0
+  frame_length: 512
+  hop_length: 160
+  pause_threshold_db: -40.0
+  min_pause_seconds: 0.2
+
+transcript:
+  lowercase: true
+  normalize_punctuation: true
+  remove_chat_control_symbols: true
+  preserve_filled_pauses: true
+  preserve_disfluency_markers: true
+  spacy_model: en_core_web_sm
+  stanza_lang: en
+  mattr_window: 20
+
+features:
+  normalization_epsilon: 1.0e-8
+
+graph:
+  include_self_loops: true
+
+model:
+  hidden_dim: 128
+  num_heads: 8
+  head_dim: 16
+  num_layers: 4
+  ffn_dim: 512
+  patient_summary_dim: 32
+  dropout: 0.2
+  activation: gelu
+  prenorm: true
+  gate_lambda: 1.0
+  gate_epsilon: 1.0e-6
+
+training:
+  batch_size: 16
+  epochs: 150
+  gradient_clip_norm: 1.0
+  checkpoint_metric: f1
+  checkpoint_tie_break_metric: accuracy
+
+optimization:
+  optimizer: adamw
+  lr: 1.0e-4
+  weight_decay: 1.0e-4
+  scheduler: linear_warmup_cosine_decay
+  warmup_epochs: 10
+
+augmentation:
+  modality_dropout_p: 0.1
+  gaussian_noise_std: 0.01
+
+losses:
+  classification_loss: bce_with_logits
+  consistency_weight: 0.2
+  gate_sparsity_weight: 1.0e-4
+  pos_weight_mode: fit_on_train_partition
+
+evaluation:
+  num_folds: 5
+  train_ratio: 0.7
+  val_ratio: 0.1
+  test_ratio: 0.2
+  positive_label: 1
+  metrics: [accuracy, precision, recall, f1]
+  holdout_wls: true
+  robustness_random_feature_group_mask_rate: 0.2
+
+calibration:
+  enabled: true
+  method: temperature_scaling
+  threshold: 0.5
+  fit_split: validation
+  max_iter: 200
+
+inference:
+  top_k_fc: 10
+  top_k_cd: 6
+  export_json: true
+  return_raw_probability: true
+
+logging:
+  save_split_manifests: true
+  save_feature_stats: true
+  save_graph_schema: true
+  save_temperature: true
+  save_parameter_count: true
+  save_runtime_logs: true
+

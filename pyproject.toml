@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "speechcgt"
+version = "0.1.0"
+description = "SpeechCGT: A Knowledge-Guided Causal Graph Transformer for Interpretable Cognitive Impairment Detection from Multimodal Speech."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "numpy>=1.26",
+  "pandas>=2.2",
+  "PyYAML>=6.0",
+  "scikit-learn>=1.4",
+  "soundfile>=0.12",
+  "librosa>=0.10",
+  "pyloudnorm>=0.1.1",
+  "praat-parselmouth>=0.4.4",
+  "spacy>=3.7",
+  "stanza>=1.8",
+  "torch>=2.2",
+  "torch-geometric>=2.5",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.2",
+]
+
+[project.scripts]
+speechcgt-train = "speechcgt.scripts.train:main"
+speechcgt-evaluate = "speechcgt.scripts.evaluate:main"
+speechcgt-infer = "speechcgt.scripts.infer:main"
+speechcgt-build-manifests = "speechcgt.data.adapters:build_manifests"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["speechcgt*"]
+
